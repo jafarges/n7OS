@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <n7OS/cpu.h>
 #include <string.h>
+#include <n7OS/time.h>
 
 #define CONSOLE_LINES 25
 #define CONSOLE_COLUMNS 80
@@ -28,7 +29,7 @@ void setcolor(color_t c){
 * Set the background color
 */
 void setbgcolor(color_t c){
-        font &= 0x8F;
+        font &= 0x0F;
         font |= c<<4;
 }
 
@@ -129,3 +130,53 @@ void console_putbytes(const char *s, int len) {
 	}
 }
 
+void display_time(){
+    setcolor(BLACK);
+    setbgcolor(WHITE);
+
+    time_t tElps;
+    getTimeElapsed(&tElps);
+
+    int dx=8;
+
+    int d_hrs = tElps.hours/10;
+    int d_mn = tElps.minutes/10;
+    int d_sc = tElps.seconds/10;
+    
+
+    // Dizaine d'heure
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+d_hrs);
+    tElps.hours -= d_hrs * 10;
+    dx--;
+    
+    // Heures
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+tElps.hours);
+    dx--;
+
+    // ':'
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|':';
+    dx--;
+
+    // Dizaine de minute
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+d_mn);
+    tElps.minutes -= d_mn * 10;
+    dx--;
+    
+    // Minutes
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+tElps.minutes);
+    dx--;
+
+    // ':'
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|':';
+    dx--;
+
+
+    // Dizaine de secondes
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+d_sc);
+    tElps.seconds -= d_sc * 10;
+    dx--;
+    
+    // Secondes
+    CONSOLE_ORIGIN[CONSOLE_COLUMNS-dx]=(font<<8)|('0'+tElps.seconds);
+    
+}

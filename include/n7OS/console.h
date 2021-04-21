@@ -7,4 +7,6 @@
  */
 void console_putbytes(const char *s, int len);
 
+void display_time();
+
 #endif
