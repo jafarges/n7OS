@@ -19,8 +19,8 @@ void init_timer(){
     // Set frequency for channel 0
     uint16_t target_clk = 1000;
     uint16_t f_ch0 = F_OSC/target_clk;
-      outb(f_ch0 & 0xFF,0x40);
-     outb(f_ch0>>8,0x40);
+    outb(f_ch0 & 0xFF,0x40);
+    outb(f_ch0>>8,0x40);
   
    
 
