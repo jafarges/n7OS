@@ -7,8 +7,10 @@
 #include <n7OS/console.h>
 #include <unistd.h>
 #include <n7OS/sys.h>
+#include <n7OS/processus.h>
 
 extern void handler_IT();
+extern void processus1();
 
 void handler_en_C() {
     printf("Interruption 50 recu!\n");
@@ -21,6 +23,11 @@ void init_irq() {
 
 void kernel_start(void)
 {
+    // Init process
+    init();
+
+    fork("Processus1",&processus1);
+
     // Prepare timer
     init_timer();
 
@@ -33,6 +40,7 @@ void kernel_start(void)
     printf("\f");
     printf("Bienvenu sur Minishell!\nVersion O.1\n");
     printf("\n");
+
 
     //shutdown(1);
     while (1) {
