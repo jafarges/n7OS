@@ -31,7 +31,7 @@ void kernel_start(void)
     init();
 
     // Création des processus
-    fork("Processus1",&processus1);
+    create_proc("Processus1",&processus1);
 
     // Initialisation du timer
     init_timer();

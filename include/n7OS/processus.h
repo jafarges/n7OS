@@ -58,7 +58,7 @@ void removeProcess(PROCESS_ID pid);
 void scheduler();
 
 // Création d'un processus
-PROCESS_ID create(const char* name, myFunction mfunc);
+PROCESS_ID create_proc(const char* name, myFunction mfunc);
 
 // Récupération de l'ID du processus courant
 PROCESS_ID getpid();

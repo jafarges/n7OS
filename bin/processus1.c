@@ -1,6 +1,11 @@
 #include <stdio.h>
+#include <n7OS/processus.h>
 
 void processus1() {
-  printf("Hello, world from P1\n");
-  for (;;);
+  for (;;){
+    //cli au début de timer pour les processus
+    //sti à la fin avant le ctx switch
+    printf("Hello, world from P1\n");
+    scheduler();
+  }
 }
