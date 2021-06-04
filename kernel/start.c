@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <n7OS/sys.h>
 #include <n7OS/processus.h>
+#include <malloc.h>
 
 extern void handler_IT();
 extern void processus1();
@@ -23,10 +24,19 @@ void init_irq() {
 
 void kernel_start(void)
 {
-    // Init process
-    init();
 
-    fork("Processus1",&processus1);
+    malloc(4096,sizeof(int));
+    //malloc(sizeof(int));
+
+
+//    uint32_t* v = (uint32_t*) malloc(sizeof(uint32_t));
+  //  *v = 5;
+
+
+    // Init process
+    //init();
+
+    //fork("Processus1",&processus1);
 
     // Prepare timer
     init_timer();
@@ -35,6 +45,8 @@ void kernel_start(void)
 
     // Enable interruptions
     sti();
+
+
 
     // Welcoming screen
     printf("\f");

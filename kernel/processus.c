@@ -35,7 +35,8 @@ uint32_t init_stack(){
 
 PROCESS_ID fork(const char* name, myFunction mfunc)
 {
-    PROCESS_ID pid;
+
+    /*PROCESS_ID pid;
     if((pid=allouer_pid())==-1){
         printf("PID MAX REACHED\n");
         return -1;
@@ -47,7 +48,7 @@ PROCESS_ID fork(const char* name, myFunction mfunc)
 
     prc_table[pid].prcID = pid;
     prc_table[pid].prcState = PRET_SUSPENDU;
-
+*/
     // Initialize the context
     //memset(prc_table[pid].prcReg,0,sizeof(uint32_t)*5);
 
@@ -59,9 +60,9 @@ PROCESS_ID fork(const char* name, myFunction mfunc)
     //stackPointer[STACK_SIZE-1] = (uint32_t)mfunc;
 
     // Add the process in the queue
-    addProcess(1);
+  //  addProcess(1);
 
-    return pid;
+    return -1;
 }
 
 void addProcess(PROCESS_ID pid){
