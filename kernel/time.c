@@ -3,6 +3,7 @@
 #include <n7OS/cpu.h>
 #include <n7OS/irq.h>
 #include <stdio.h>
+#include <n7OS/processus.h>
 
 #define F_OSC 0x1234BD
 
@@ -22,8 +23,6 @@ void init_timer(){
     outb(f_ch0 & 0xFF,0x40);
     outb(f_ch0>>8,0x40);
   
-   
-
     // Activating the timer interruption
     outb(inb(0x21)&0xFE,0x21);
 
@@ -45,7 +44,13 @@ void getTimeElapsed(time_t* des){
 
 
 void handler_Timer_C(){
-    // ACK
     outb(0x20,0x20);
+    cli();
+    
     ms_from_start++;
+
+    // Ordonnancement par quantum de temps, toutes les 10ms
+    if(ms_from_start%10 ==0){
+        scheduler(false);
+    }
 }
