@@ -7,6 +7,10 @@
  */
 void console_putbytes(const char *s, int len);
 
+/*
+* Fonction permettant d'afficher le temps total d'exécution du noyau
+* au format hh:mm:ss
+*/
 void display_time();
 
 #endif
