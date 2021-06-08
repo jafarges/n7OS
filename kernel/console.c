@@ -156,6 +156,13 @@ void console_putbytes(const char *s, int len) {
 	}
 }
 
+void setcursorpos(int lin,int col){
+    if(lin<CONSOLE_LINES && col < CONSOLE_COLUMNS){
+        line=lin;
+        column=col;
+    }
+}
+
 void display_time(){
     setcolor(BLACK);
     setbgcolor(WHITE);

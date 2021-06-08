@@ -3,12 +3,11 @@
 #include <n7OS/console.h>
 #include <n7OS/time.h>
 
-void processus1() {
-  int i=0;
-  for (;;){
+void processus2() {
+  for (int k=0;k<10000;k++){
     lock();
-        setcursorpos(3,0);    
-        printf("Processus 1 : compteur i=%d\r",i++);
+        setcursorpos(5,0);    
+        printf("Bonjour du processus 2, k=%d",k);
     unlock();
   }
   exit();

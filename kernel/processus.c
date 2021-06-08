@@ -5,6 +5,8 @@
 #include <string.h>
 #include <n7OS/cpu.h>
 #include <n7OS/processor_structs.h>
+#include <n7OS/time.h>
+#include <n7OS/console.h>
 
 extern void ctx_sw(void* ctx_old,void* ctx_new);
 
@@ -23,8 +25,76 @@ PROCESS_ID currentPID;
 // Selecteur de processus (dans la file)
 int proc_ready_sel=0;
 
+// Verrou de la sémaphore
+bool sync_lock=false;
+
+// Demande d'ordonnancement reçue lors d'un verrou (sémaphore)
+bool schedule_asked=false;
+
+// Temps système (en ms) à partir duquel l'ordonnanceur effectuera 
+// le changement de processus (par rapport au nombre de ms écoulées depuis le démarrage)
+int next_scheduling=10;
+
+// Nombre de processus crés
+int nb_proc_created=0;
+
+// Vérouillage de la sémaphore
+void lock(){
+    sync_lock=true;
+}
+
+// Dévérouillage de la sémaphore
+void unlock(){
+    sync_lock=false;
+    if(schedule_asked){
+        schedule_asked=false;
+        next_scheduling = getMillis() + 10;
+        sw_proc(true);
+    }
+}
+
+
+char* getProcStateStr(PROCESS_STATE pState){
+    switch(pState){
+        case ELU:
+            return "ELU";
+        case PRET_ACTIF:
+            return "ACTIF";
+        case PRET_SUSPENDU:
+            return "SUSPENDU";
+        case EXITED:
+            return "TERMINE";
+        default:
+            return "INCONNU";
+    }
+}
+
+
+void process_manager(){
+    // Affiche les informations des processus crés dans un tableau
+    // (10 au maximum)
+    int proc2show;
+
+    while(true){
+        proc2show =nb_proc_created;
+        if(proc2show>10){
+            proc2show = 10;
+        }
+        lock();
+            setcursorpos(7,0);
+            printf("| ID |    NOM     |    ETAT    |\n");
+            for(int lF = 0;lF<proc2show;lF++){
+                printf("| %d  | %10.10s | %10.10s |\n",prc_table[lF].prcID,prc_table[lF].prcName,getProcStateStr(prc_table[lF].prcState));
+            }
+        unlock();  
+    }
+}
+
 void init(){
+    nb_proc_created=1;
+
     // Initialement, processus IDLE en cours d'exécution
+    // (le processus qui met à jour l'horloge)
     currentPID = 0; 
     memset(prc_table,0,sizeof(process_t)*MAX_PROCESS);
 
@@ -39,17 +109,19 @@ void init(){
 
     // Ajout dans la file des processus prêt
     addProcess(0);
+
+    // Ajout du processus permettant de visualiser les processus
+    // crés
+    create_proc("PROC_MGR",&process_manager);
 }
 
 // Retourne le prochain PID disponible
 // ou -1 si l'on ne peut plus crée de processus
 PROCESS_ID allouer_pid(){
-    static PROCESS_ID crPid=0;
-    crPid++; // On prend le prochain PID disponible
-    if(!(crPid<MAX_PROCESS))
+    if(!(nb_proc_created<MAX_PROCESS))
         return -1;
     else
-        return crPid;
+        return nb_proc_created++;
 }
 
 // Créer le processus de nom name, et de fonction mfunc
@@ -103,11 +175,15 @@ void addProcess(PROCESS_ID pid){
     }
 }
 
-void suspendProcess(PROCESS_ID pid){
-    prc_table[pid].prcState=PRET_SUSPENDU;
+
+// Supprime le processus de PID donné de la liste des processus prêt
+void removeProcess(int pid){
     int qLoc = prc_table[pid].prcQueueIdx;
 
     for(int k=(++qLoc);k<nb_ready_proc;k++){
+        // On déplace le processus dans la file des processus prêt
+        prc_ready[k]->prcQueueIdx = k-1;
+
         prc_ready[k-1]=prc_ready[k];
     }
     nb_ready_proc--;
@@ -124,9 +200,33 @@ void suspendProcess(PROCESS_ID pid){
         }else{
             proc_ready_sel--;
         }
-        scheduler(true);
+
+        sw_proc(false);
     }
 }
+
+void scheduler(int ms_from_st){
+    // Ordonnancement par quantum de temps, toutes les 10ms
+    if(ms_from_st == next_scheduling){
+        if(sync_lock){
+            schedule_asked=true;
+            // Pas de prochain ordonancement prévu, c'est lors du
+            // déverrouillage de la sémaphore que l'on 
+            // effectuera le changement de processus élu
+        }else{
+            next_scheduling+=10; // Prochain ordonancement dans 10ms;
+            sw_proc(true);
+        }
+    }
+}
+
+
+
+void suspendProcess(PROCESS_ID pid){
+    prc_table[pid].prcState=PRET_SUSPENDU;
+    removeProcess(pid);
+}
+
 
 
 // On récupère le prochain processus de la file à exécuter
@@ -137,13 +237,17 @@ PROCESS_ID nextProcess(){
     return retID;
 }
 
-void scheduler(bool onSuspend){
+void sw_proc(bool stillActive){
     if(nb_ready_proc>0){
         PROCESS_ID oldPID = currentPID;
 
         currentPID = nextProcess();                   
 
-        prc_table[oldPID].prcState = onSuspend ? PRET_SUSPENDU : PRET_ACTIF ;
+        // On vérifie si le processus anciennement élu reste actif
+        if(stillActive){
+            prc_table[oldPID].prcState = PRET_ACTIF ;
+        }
+
         prc_table[currentPID].prcState = ELU;
 
         sti();
@@ -153,4 +257,12 @@ void scheduler(bool onSuspend){
 
 PROCESS_ID getpid(){
     return currentPID;
+}
+
+void exit(){
+    // On controle que l'on ne cherche pas à quitter le processus d'horloge 
+    if(currentPID != 0){
+        prc_table[currentPID].prcState = EXITED;
+        removeProcess(currentPID);
+    }    
 }

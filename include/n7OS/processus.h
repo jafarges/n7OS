@@ -14,7 +14,7 @@
 #define STACK_SIZE 1024
 
 // Etat possibles pour un processus
-typedef enum {ELU, PRET_ACTIF, PRET_SUSPENDU, BLOQUE_ACTIF, BLOQUE_SUSPENDU} PROCESS_STATE;
+typedef enum {ELU, PRET_ACTIF, PRET_SUSPENDU, EXITED} PROCESS_STATE;
 
 // Identifiant d'un processus
 typedef uint16_t PROCESS_ID;
@@ -61,12 +61,25 @@ void addProcess(PROCESS_ID pid);
 void suspendProcess(PROCESS_ID pid);
 
 // Switching de processus
-void scheduler(bool onSuspend);
+void sw_proc(bool stillActive);
+
+// Ordonnanceur (appelé par le timer à chaque ms)
+void scheduler(int ms_from_st);
 
 // Création d'un processus
 PROCESS_ID create_proc(const char* name, myFunction mfunc);
 
 // Récupération de l'ID du processus courant
 PROCESS_ID getpid();
+
+// Destruction du processus appelant
+void exit();
+
+// Prise du verrou sur la sémaphore
+void lock();
+
+// Déverouillage de la sémaphore
+void unlock();
+
 
 #endif

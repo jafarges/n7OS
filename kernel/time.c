@@ -42,15 +42,17 @@ void getTimeElapsed(time_t* des){
     des->seconds = currTime / 1000;
 }
 
+int getMillis(){
+    return ms_from_start;
+}
 
+// Traitant de l'interruption du timer
 void handler_Timer_C(){
     outb(0x20,0x20);
     cli();
     
     ms_from_start++;
 
-    // Ordonnancement par quantum de temps, toutes les 10ms
-    if(ms_from_start%10 ==0){
-        scheduler(false);
-    }
+    // Appel à l'ordonnanceur
+    scheduler(ms_from_start);
 }

@@ -18,5 +18,7 @@ void init_timer();
 // Récupération du temps écoulé depuis le démarrage du noyau (dans des)
 void getTimeElapsed(time_t* des);
 
+// Retourne le nombre de millisecondes écoulées depuis le démarrage du système
+int getMillis();
 
 #endif

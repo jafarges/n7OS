@@ -13,4 +13,10 @@ void console_putbytes(const char *s, int len);
 */
 void display_time();
 
+/*
+* Fonction permettant de modifier l'emplacement du curseur
+* d'écriture
+*/
+void setcursorpos(int lin,int col);
+
 #endif
